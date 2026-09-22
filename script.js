@@ -285,14 +285,13 @@ function renderRank(){
   const list = $("#rankList");
   list.innerHTML=selected.map((id,i)=>{
     const p=candidates.find(x=>x.id===id);
-    return `<li class="rank-item" draggable="true" data-id="${p.id}">
+    return `<li class="rank-item" data-id="${p.id}">
       <div class="rank-num">${i+1}</div>${avatarHTML(p)}
       <div class="candidate-info"><div class="name">${escapeHtml(p.name)}</div><div class="group">${escapeHtml(p.group)}</div></div>
       <div class="rank-controls">
         <button type="button" class="move-btn" data-move="up" aria-label="上へ">↑</button>
         <button type="button" class="move-btn" data-move="down" aria-label="下へ">↓</button>
       </div>
-      <div class="drag">☷</div>
     </li>`;
   }).join("");
 
