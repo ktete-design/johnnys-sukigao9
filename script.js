@@ -49,7 +49,7 @@ const juniorCandidates = [
 ];
 
 const candidates = [
-{id:"nishikido",name:"錦戸亮",group:"NEWS / 関ジャニ∞",aliases:["にしきど","りょう"]},
+  {id:"nishikido",name:"錦戸亮",group:"NEWS / 関ジャニ∞",aliases:["にしきど","りょう"]},
   {id:"yamashita",name:"山下智久",group:"NEWS",aliases:["やました","ともひさ"]},
   {id:"masuda",name:"増田貴久",group:"NEWS",aliases:["ますだ","たかひさ"]},
   {id:"koyama",name:"小山慶一郎",group:"NEWS",aliases:["こやま"]},
