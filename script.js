@@ -309,57 +309,6 @@ function renderRank(){
     renderRank();
   }));
 
-  // PC：通常のドラッグ＆ドロップ
-  let draggedId=null;
-  list.querySelectorAll(".rank-item").forEach(item=>{
-    item.addEventListener("dragstart",e=>{
-      draggedId=item.dataset.id;
-      item.classList.add("dragging");
-      if(e.dataTransfer){e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",draggedId);}
-    });
-    item.addEventListener("dragend",()=>{draggedId=null;item.classList.remove("dragging");});
-    item.addEventListener("dragover",e=>e.preventDefault());
-    item.addEventListener("drop",e=>{
-      e.preventDefault();
-      const targetId=item.dataset.id;
-      if(!draggedId||draggedId===targetId)return;
-      const a=selected.indexOf(draggedId), b=selected.indexOf(targetId);
-      selected.splice(a,1);
-      selected.splice(selected.indexOf(targetId),0,draggedId);
-      renderRank();
-    });
-  });
-
-  // iPhone：ドラッグハンドルを長押し→指で移動
-  let dragState=null;
-  list.querySelectorAll(".drag").forEach(handle=>{
-    handle.addEventListener("pointerdown",e=>{
-      if(e.pointerType === "mouse") return;
-      const item=handle.closest(".rank-item");
-      dragState={item,id:item.dataset.id,pointerId:e.pointerId};
-      item.classList.add("dragging");
-      try{handle.setPointerCapture(e.pointerId);}catch(_){ }
-      e.preventDefault();
-    });
-    handle.addEventListener("pointermove",e=>{
-      if(!dragState || e.pointerId!==dragState.pointerId) return;
-      const over=document.elementFromPoint(e.clientX,e.clientY)?.closest(".rank-item");
-      if(!over || over===dragState.item) return;
-      const rect=over.getBoundingClientRect();
-      const before=e.clientY < rect.top + rect.height/2;
-      if(before) over.parentNode.insertBefore(dragState.item,over);
-      else over.parentNode.insertBefore(dragState.item,over.nextSibling);
-    });
-    const finish=()=>{
-      if(!dragState) return;
-      dragState.item.classList.remove("dragging");
-      selected=[...list.querySelectorAll(".rank-item")].map(el=>el.dataset.id);
-      dragState=null;
-      renderRank();
-    };
-    handle.addEventListener("pointerup",finish);
-    handle.addEventListener("pointercancel",finish);
-  });
 }
 function renderResult(){
   $("#resultList").innerHTML=selected.map((id,i)=>{
