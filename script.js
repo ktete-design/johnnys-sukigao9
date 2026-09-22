@@ -48,7 +48,7 @@ const juniorCandidates = [
   {id:"senda-aoi",name:"千田藍生",group:"Boys be",aliases:["せんだ","あおい"]}
 ];
 
-const candidates = [
+const
 const candidates = [
 {id:"nishikido",name:"錦戸亮",group:"NEWS / 関ジャニ∞",aliases:["にしきど","りょう"]},
   {id:"yamashita",name:"山下智久",group:"NEWS",aliases:["やました","ともひさ"]},
