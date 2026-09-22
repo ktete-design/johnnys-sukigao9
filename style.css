@@ -71,3 +71,16 @@ h1 span{font-size:.72em}
   h1{font-size:40px}
   .candidate-grid{grid-template-columns:1fr}
 }
+
+.candidate{padding:0;overflow:hidden;display:block}
+.candidate.selected{padding:0}
+.candidate-main{position:relative;width:100%;border:0;background:transparent;padding:12px;text-align:left;display:flex;align-items:center;gap:10px;min-height:76px;color:inherit}
+.candidate-main:disabled{opacity:.45;cursor:not-allowed}
+.candidate-main .avatar{margin:0;flex:0 0 56px}
+.photo-btn{display:block;width:calc(100% - 24px);margin:0 12px 10px;border:1px solid var(--accent2);background:#fff;border-radius:999px;padding:7px 8px;color:#9d4f6c;font-size:10px;font-weight:700}
+.photo-btn:active{transform:scale(.98)}
+
+/* Mobile ranking drag support */
+.rank-item{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;position:relative;transition:transform .12s,opacity .12s,box-shadow .12s}
+.rank-item.dragging{opacity:.72;box-shadow:0 8px 24px rgba(50,30,40,.16);transform:scale(1.02);z-index:10;cursor:grabbing}
+@media (hover:none){.rank-item{cursor:grab}.rank-item .drag{font-size:24px}}

@@ -55,7 +55,7 @@ const candidates = [
   {id:"kusanagi",name:"草彅剛",group:"SMAP",aliases:['草彅剛']},
   {id:"katori",name:"香取慎吾",group:"SMAP",aliases:['香取慎吾']},
   {id:"mori-katsu",name:"森且行",group:"SMAP",aliases:['森且行']},
-  {id:"nagase",name:"長瀬智也",group:"TOKIO",aliases:['長瀬智也']},
+  {id:"nagase-tomoya",name:"長瀬智也",group:"TOKIO",aliases:['長瀬智也']},
   {id:"matsuoka",name:"松岡昌宏",group:"TOKIO",aliases:['松岡昌宏']},
   {id:"yamaguchi",name:"山口達也",group:"TOKIO",aliases:['山口達也']},
   {id:"kokubun",name:"国分太一",group:"TOKIO",aliases:['国分太一']},
@@ -123,7 +123,7 @@ const candidates = [
   {id:"inomatashuto",name:"猪俣周杜",group:"timelesz(Sexy Zone)",aliases:['猪俣周杜']},
   {id:"shinozuka",name:"篠塚大輝",group:"timelesz(Sexy Zone)",aliases:['篠塚大輝']},
   {id:"hirano",name:"平野紫耀",group:"King & Prince",aliases:['平野紫耀']},
-  {id:"nagase",name:"永瀬廉",group:"King & Prince",aliases:['永瀬廉']},
+  {id:"nagase-kp",name:"永瀬廉",group:"King & Prince",aliases:['永瀬廉']},
   {id:"kishiyuta",name:"岸優太",group:"King & Prince",aliases:['岸優太']},
   {id:"jinguji",name:"神宮寺勇太",group:"King & Prince",aliases:['神宮寺勇太']},
   {id:"takahashi-kaito",name:"髙橋海人",group:"King & Prince",aliases:['髙橋海人']},
@@ -135,7 +135,7 @@ const candidates = [
   {id:"morimoto-shintaro",name:"森本慎太郎",group:"SixTONES",aliases:['森本慎太郎']},
   {id:"kochi",name:"髙地優吾",group:"SixTONES",aliases:['髙地優吾']},
   {id:"meguro",name:"目黒蓮",group:"Snow Man",aliases:['目黒蓮']},
-  {id:"sakuma",name:"佐久間大介",group:"Snow Man",aliases:['佐久間大介']},
+  {id:"sakuma-snow",name:"佐久間大介",group:"Snow Man",aliases:['佐久間大介']},
   {id:"abe",name:"阿部亮平",group:"Snow Man",aliases:['阿部亮平']},
   {id:"watanabe",name:"渡辺翔太",group:"Snow Man",aliases:['渡辺翔太']},
   {id:"raul",name:"ラウール",group:"Snow Man",aliases:['ラウール']},
@@ -171,7 +171,6 @@ const candidates = [
   {id:"richard",name:"草間リチャード敬太",group:"Aぇ! group",aliases:['草間リチャード敬太', '草間', 'リチャード', '敬太']},
   {id:"taisei",name:"福本大晴",group:"Aぇ! group",aliases:['福本大晴']}
 ].concat(juniorCandidates);
-
 let selected = [];
 let currentFilter = "すべて";
 let draggedId = null;
@@ -183,12 +182,57 @@ function show(id){
   screens.forEach(s=>s.classList.toggle("active",s.id===id));
   window.scrollTo({top:0,behavior:"smooth"});
 }
-function avatarHTML(person){
-  // photos can be added later by setting person.image = "images/xxx.jpg"
-  return person.image
-    ? `<div class="avatar"><img src="${person.image}" alt=""></div>`
-    : `<div class="avatar">${person.name.slice(0,2)}</div>`;
+const PHOTO_KEY = "johnnys-sukigao9-photos";
+let photos = loadPhotos();
+let photoTargetId = null;
+
+function loadPhotos(){
+  try{return JSON.parse(localStorage.getItem(PHOTO_KEY) || "{}");}
+  catch(e){return {};}
 }
+function savePhotos(){
+  try{localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); return true;}
+  catch(e){alert("写真の保存容量を超えました。不要な写真を削除してから、もう一度試してください。"); return false;}
+}
+function avatarHTML(person){
+  const image = photos[person.id] || person.image;
+  return image
+    ? `<div class="avatar"><img src="${image}" alt="${escapeHtml(person.name)}の好きビジュ"></div>`
+    : `<div class="avatar">${escapeHtml(person.name.slice(0,2))}</div>`;
+}
+function photoButtonHTML(person){
+  const hasPhoto = !!photos[person.id];
+  return `<button class="photo-btn" type="button" data-photo-id="${person.id}" aria-label="${escapeHtml(person.name)}の好きビジュを${hasPhoto?"変更":"追加"}">📷 ${hasPhoto?"変更":"好きビジュ"}</button>`;
+}
+function resizeImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=reject;
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=reject;
+      img.onload=()=>{
+        const max=800;
+        const scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+        const w=Math.max(1,Math.round(img.naturalWidth*scale));
+        const h=Math.max(1,Math.round(img.naturalHeight*scale));
+        const canvas=document.createElement("canvas");
+        canvas.width=w; canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL("image/jpeg",0.82));
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function openPhotoPicker(id){
+  photoTargetId=id;
+  const input=$("#photoInput");
+  input.value="";
+  input.click();
+}
+
 function groups(){
   return ["すべて",...new Set(candidates.map(x=>x.group))];
 }
@@ -211,13 +255,17 @@ function renderCandidates(){
   $("#candidateGrid").innerHTML=list.map(p=>{
     const isSelected=selected.includes(p.id);
     const unavailable=!isSelected && selected.length>=9;
-    return `<button class="candidate ${isSelected?"selected":""}" data-id="${p.id}" ${unavailable?"disabled":""}>
-      ${avatarHTML(p)}
-      <div class="candidate-info"><div class="name">${escapeHtml(p.name)}</div><div class="group">${escapeHtml(p.group)}</div></div>
-      ${isSelected?'<span class="check">✓</span>':""}
-    </button>`;
+    return `<div class="candidate ${isSelected?"selected":""}" data-id="${p.id}">
+      <button class="candidate-main" type="button" ${unavailable?"disabled":""}>
+        ${avatarHTML(p)}
+        <div class="candidate-info"><div class="name">${escapeHtml(p.name)}</div><div class="group">${escapeHtml(p.group)}</div></div>
+        ${isSelected?'<span class="check">✓</span>':""}
+      </button>
+      ${photoButtonHTML(p)}
+    </div>`;
   }).join("") || `<p class="note">該当する候補者がいません。</p>`;
-  document.querySelectorAll(".candidate").forEach(b=>b.onclick=()=>toggleCandidate(b.dataset.id));
+  document.querySelectorAll(".candidate-main").forEach(b=>b.onclick=()=>toggleCandidate(b.closest(".candidate").dataset.id));
+  document.querySelectorAll(".photo-btn").forEach(b=>b.onclick=(e)=>{e.stopPropagation();openPhotoPicker(b.dataset.photoId);});
 }
 function renderSelected(){
   $("#selectedCount").textContent=selected.length;
@@ -242,15 +290,53 @@ function renderRank(){
       <div class="drag">☷</div>
     </li>`;
   }).join("");
+  // Desktop: native drag & drop
   document.querySelectorAll(".rank-item").forEach(item=>{
-    item.addEventListener("dragstart",()=>draggedId=item.dataset.id);
+    item.addEventListener("dragstart",e=>{
+      draggedId=item.dataset.id;
+      item.classList.add("dragging");
+      if(e.dataTransfer) e.dataTransfer.effectAllowed="move";
+    });
+    item.addEventListener("dragend",()=>{
+      draggedId=null;
+      item.classList.remove("dragging");
+    });
     item.addEventListener("dragover",e=>e.preventDefault());
-    item.addEventListener("drop",()=>{
+    item.addEventListener("drop",e=>{
+      e.preventDefault();
       const targetId=item.dataset.id;
       if(!draggedId||draggedId===targetId)return;
       const a=selected.indexOf(draggedId), b=selected.indexOf(targetId);
-      selected.splice(a,1); selected.splice(b,0,draggedId); renderRank();
+      selected.splice(a,1); selected.splice(b,0,draggedId);
+      renderRank();
     });
+
+    // iPhone/iPad: HTML5 drag is not reliable, so use touch/pointer dragging.
+    let pointerId=null;
+    item.addEventListener("pointerdown",e=>{
+      if(e.pointerType === "mouse") return;
+      pointerId=e.pointerId;
+      item.classList.add("dragging");
+      try{ item.setPointerCapture(pointerId); }catch(_){}
+    });
+    item.addEventListener("pointermove",e=>{
+      if(pointerId!==e.pointerId) return;
+      const over=document.elementFromPoint(e.clientX,e.clientY)?.closest(".rank-item");
+      if(!over || over===item) return;
+      const rect=over.getBoundingClientRect();
+      const before=e.clientY < rect.top + rect.height/2;
+      if(before) over.parentNode.insertBefore(item,over);
+      else over.parentNode.insertBefore(item,over.nextSibling);
+    });
+    const finishPointer=()=>{
+      if(pointerId===null) return;
+      pointerId=null;
+      item.classList.remove("dragging");
+      selected=[...document.querySelectorAll("#rankList .rank-item")].map(el=>el.dataset.id);
+      document.querySelectorAll("#rankList .rank-num").forEach((el,i)=>el.textContent=i+1);
+    };
+    item.addEventListener("pointerup",finishPointer);
+    item.addEventListener("pointercancel",finishPointer);
   });
 }
 function renderResult(){
@@ -260,6 +346,22 @@ function renderResult(){
   }).join("");
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+
+$("#photoInput").addEventListener("change",async()=>{
+  const file=$("#photoInput").files[0];
+  if(!file || !photoTargetId) return;
+  if(!file.type.startsWith("image/")){alert("画像ファイルを選んでね。");return;}
+  try{
+    photos[photoTargetId]=await resizeImage(file);
+    if(savePhotos()){
+      renderCandidates();
+      renderSelected();
+      if(document.querySelector("#rank").classList.contains("active")) renderRank();
+      if(document.querySelector("#result").classList.contains("active")) renderResult();
+    }
+  }catch(e){alert("画像の読み込みに失敗しました。別の画像で試してみてね。");}
+  photoTargetId=null;
+});
 
 $("#startBtn").onclick=()=>{show("select");renderFilters();renderSelected();renderCandidates();};
 $("#search").addEventListener("input",renderCandidates);
