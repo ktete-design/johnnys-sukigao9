@@ -1,5 +1,56 @@
+const juniorCandidates = [
+  // ACEes
+  {id:"ukisho",name:"浮所飛貴",group:"ACEes",aliases:["うきしょ","ひだか"]},
+  {id:"nasu",name:"那須雄登",group:"ACEes",aliases:["なす","ゆうと"]},
+  {id:"sakuma",name:"作間龍斗",group:"ACEes",aliases:["さくま","りゅうと"]},
+  {id:"fukada",name:"深田竜生",group:"ACEes",aliases:["ふかだ","りゅうせい"]},
+  {id:"sato-ryuga",name:"佐藤龍我",group:"ACEes",aliases:["さとう","りゅうが"]},
+  // KEY TO LIT
+  {id:"iwasaki-taisho",name:"岩﨑大昇",group:"KEY TO LIT",aliases:["いわさき","たいしょう"]},
+  {id:"inoue-mizuki",name:"井上瑞稀",group:"KEY TO LIT",aliases:["いのうえ","みずき"]},
+  {id:"nakamura-reia",name:"中村嶺亜",group:"KEY TO LIT",aliases:["なかむら","れいあ"]},
+  {id:"igari-soya",name:"猪狩蒼弥",group:"KEY TO LIT",aliases:["いがり","そうや"]},
+  {id:"sasaki-taiko",name:"佐々木大光",group:"KEY TO LIT",aliases:["ささき","たいこう"]},
+  // B&ZAI
+  {id:"hashimoto-ryo",name:"橋本涼",group:"B&ZAI",aliases:["はしもと","りょう"]},
+  {id:"yabana-rei",name:"矢花黎",group:"B&ZAI",aliases:["やばな","れい"]},
+  {id:"konno-taiki",name:"今野大輝",group:"B&ZAI",aliases:["こんの","たいき"]},
+  {id:"sugeta-rinne",name:"菅田琳寧",group:"B&ZAI",aliases:["すげた","りんね"]},
+  {id:"motodaka-katsuki",name:"本髙克樹",group:"B&ZAI",aliases:["もとだか","かつき"]},
+  {id:"suzuki-yujin",name:"鈴木悠仁",group:"B&ZAI",aliases:["すずき","ゆうじん"]},
+  {id:"kawasaki-hoshiki",name:"川﨑星輝",group:"B&ZAI",aliases:["かわさき","ほしき"]},
+  {id:"inaba-michiharu",name:"稲葉通陽",group:"B&ZAI",aliases:["いなば","みちはる"]},
+  // Howzit
+  {id:"oriyama-nao",name:"織山尚大",group:"Howzit",aliases:["おりやま","なお"]},
+  {id:"nishimura-takuya",name:"西村拓哉",group:"Howzit",aliases:["にしむら","たくや"]},
+  {id:"kuroda-koki",name:"黒田光輝",group:"Howzit",aliases:["くろだ","こうき"]},
+  {id:"hiyama-kosei",name:"檜山光成",group:"Howzit",aliases:["ひやま","こうせい"]},
+  {id:"vasayegh-wataru",name:"ヴァサイェガ渉",group:"Howzit",aliases:["ヴァサイェガ","わたる"]},
+  // AmBitious
+  {id:"mayumi-takeyuki",name:"真弓孟之",group:"AmBitious",aliases:["まゆみ","たけゆき"]},
+  {id:"nagaoka-leo",name:"永岡蓮王",group:"AmBitious",aliases:["ながおか","れお"]},
+  {id:"oka-yuri",name:"岡佑吏",group:"AmBitious",aliases:["おか","ゆうり"]},
+  {id:"yamanaka-itsuki",name:"山中一輝",group:"AmBitious",aliases:["やまなか","いつき"]},
+  {id:"inoue-ichita",name:"井上一太",group:"AmBitious",aliases:["いのうえ","いちた"]},
+  {id:"ura-rikuto",name:"浦陸斗",group:"AmBitious",aliases:["うら","りくと"]},
+  {id:"ouchi-rion",name:"大内リオン",group:"AmBitious",aliases:["おおうち","りおん"]},
+  // Boys be
+  {id:"ito-atsushi",name:"伊藤篤志",group:"Boys be",aliases:["いとう","あつし"]},
+  {id:"ikegawa-yukiya",name:"池川侑希弥",group:"Boys be",aliases:["いけがわ","ゆきや"]},
+  {id:"sumi-shintaro",name:"角紳太郎",group:"Boys be",aliases:["すみ","しんたろう"]},
+  {id:"maruoka-kosei",name:"丸岡晃聖",group:"Boys be",aliases:["まるおか","こうせい"]},
+  {id:"kitamura-jintaro",name:"北村仁太郎",group:"Boys be",aliases:["きたむら","じんたろう"]},
+  {id:"nakagawa-seita",name:"中川惺太",group:"Boys be",aliases:["なかがわ","せいた"]},
+  {id:"kamei-kairi",name:"亀井海聖",group:"Boys be",aliases:["かめい","かいり"]},
+  {id:"sakimoto-kotaro",name:"嵜本孝太朗",group:"Boys be",aliases:["さきもと","こうたろう"]},
+  {id:"iwakura-tsukasa",name:"岩倉司",group:"Boys be",aliases:["いわくら","つかさ"]},
+  {id:"uegaaki-kosuke",name:"上垣廣祐",group:"Boys be",aliases:["うえがき","こうすけ"]},
+  {id:"senda-aoi",name:"千田藍生",group:"Boys be",aliases:["せんだ","あおい"]}
+];
+
 const candidates = [
-  {id:"nishikido",name:"錦戸亮",group:"NEWS / 関ジャニ∞",aliases:["にしきど","りょう"]},
+const candidates = [
+{id:"nishikido",name:"錦戸亮",group:"NEWS / 関ジャニ∞",aliases:["にしきど","りょう"]},
   {id:"yamashita",name:"山下智久",group:"NEWS",aliases:["やました","ともひさ"]},
   {id:"masuda",name:"増田貴久",group:"NEWS",aliases:["ますだ","たかひさ"]},
   {id:"koyama",name:"小山慶一郎",group:"NEWS",aliases:["こやま"]},
@@ -28,9 +79,8 @@ const candidates = [
   {id:"sano",name:"佐野晶哉",group:"Aぇ! group",aliases:["さの","まさや"]},
   {id:"richard",name:"草間リチャード敬太",group:"Aぇ! group（元メンバー）",aliases:["リチャード","りちゃーど","くさまりちゃーど"]},
   {id:"taisei",name:"福本大晴",group:"Aぇ! group（元メンバー）",aliases:["ふくもと","たいせい"]},
-  {id:"jr-sample-1",name:"ジュニア候補①",group:"ジュニア",aliases:["じゅにあ"]},
   {id:"jr-sample-2",name:"ジュニア候補②",group:"ジュニア",aliases:["じゅにあ"]}
-];
+].concat(juniorCandidates);
 
 let selected = [];
 let currentFilter = "すべて";
