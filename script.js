@@ -282,61 +282,83 @@ function toggleCandidate(id){
   renderSelected(); renderCandidates();
 }
 function renderRank(){
-  $("#rankList").innerHTML=selected.map((id,i)=>{
+  const list = $("#rankList");
+  list.innerHTML=selected.map((id,i)=>{
     const p=candidates.find(x=>x.id===id);
     return `<li class="rank-item" draggable="true" data-id="${p.id}">
       <div class="rank-num">${i+1}</div>${avatarHTML(p)}
       <div class="candidate-info"><div class="name">${escapeHtml(p.name)}</div><div class="group">${escapeHtml(p.group)}</div></div>
+      <div class="rank-controls">
+        <button type="button" class="move-btn" data-move="up" aria-label="上へ">↑</button>
+        <button type="button" class="move-btn" data-move="down" aria-label="下へ">↓</button>
+      </div>
       <div class="drag">☷</div>
     </li>`;
   }).join("");
-  // Desktop: native drag & drop
-  document.querySelectorAll(".rank-item").forEach(item=>{
+
+  // 矢印ボタン：iPhoneでも確実に並べ替えできる保険機能
+  list.querySelectorAll(".move-btn").forEach(btn=>btn.addEventListener("click", e=>{
+    e.stopPropagation();
+    const item=btn.closest(".rank-item");
+    const id=item.dataset.id;
+    const index=selected.indexOf(id);
+    const dir=btn.dataset.move === "up" ? -1 : 1;
+    const next=index+dir;
+    if(next<0 || next>=selected.length) return;
+    [selected[index],selected[next]]=[selected[next],selected[index]];
+    renderRank();
+  }));
+
+  // PC：通常のドラッグ＆ドロップ
+  let draggedId=null;
+  list.querySelectorAll(".rank-item").forEach(item=>{
     item.addEventListener("dragstart",e=>{
       draggedId=item.dataset.id;
       item.classList.add("dragging");
-      if(e.dataTransfer) e.dataTransfer.effectAllowed="move";
+      if(e.dataTransfer){e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",draggedId);}
     });
-    item.addEventListener("dragend",()=>{
-      draggedId=null;
-      item.classList.remove("dragging");
-    });
+    item.addEventListener("dragend",()=>{draggedId=null;item.classList.remove("dragging");});
     item.addEventListener("dragover",e=>e.preventDefault());
     item.addEventListener("drop",e=>{
       e.preventDefault();
       const targetId=item.dataset.id;
       if(!draggedId||draggedId===targetId)return;
       const a=selected.indexOf(draggedId), b=selected.indexOf(targetId);
-      selected.splice(a,1); selected.splice(b,0,draggedId);
+      selected.splice(a,1);
+      selected.splice(selected.indexOf(targetId),0,draggedId);
       renderRank();
     });
+  });
 
-    // iPhone/iPad: HTML5 drag is not reliable, so use touch/pointer dragging.
-    let pointerId=null;
-    item.addEventListener("pointerdown",e=>{
+  // iPhone：ドラッグハンドルを長押し→指で移動
+  let dragState=null;
+  list.querySelectorAll(".drag").forEach(handle=>{
+    handle.addEventListener("pointerdown",e=>{
       if(e.pointerType === "mouse") return;
-      pointerId=e.pointerId;
+      const item=handle.closest(".rank-item");
+      dragState={item,id:item.dataset.id,pointerId:e.pointerId};
       item.classList.add("dragging");
-      try{ item.setPointerCapture(pointerId); }catch(_){}
+      try{handle.setPointerCapture(e.pointerId);}catch(_){ }
+      e.preventDefault();
     });
-    item.addEventListener("pointermove",e=>{
-      if(pointerId!==e.pointerId) return;
+    handle.addEventListener("pointermove",e=>{
+      if(!dragState || e.pointerId!==dragState.pointerId) return;
       const over=document.elementFromPoint(e.clientX,e.clientY)?.closest(".rank-item");
-      if(!over || over===item) return;
+      if(!over || over===dragState.item) return;
       const rect=over.getBoundingClientRect();
       const before=e.clientY < rect.top + rect.height/2;
-      if(before) over.parentNode.insertBefore(item,over);
-      else over.parentNode.insertBefore(item,over.nextSibling);
+      if(before) over.parentNode.insertBefore(dragState.item,over);
+      else over.parentNode.insertBefore(dragState.item,over.nextSibling);
     });
-    const finishPointer=()=>{
-      if(pointerId===null) return;
-      pointerId=null;
-      item.classList.remove("dragging");
-      selected=[...document.querySelectorAll("#rankList .rank-item")].map(el=>el.dataset.id);
-      document.querySelectorAll("#rankList .rank-num").forEach((el,i)=>el.textContent=i+1);
+    const finish=()=>{
+      if(!dragState) return;
+      dragState.item.classList.remove("dragging");
+      selected=[...list.querySelectorAll(".rank-item")].map(el=>el.dataset.id);
+      dragState=null;
+      renderRank();
     };
-    item.addEventListener("pointerup",finishPointer);
-    item.addEventListener("pointercancel",finishPointer);
+    handle.addEventListener("pointerup",finish);
+    handle.addEventListener("pointercancel",finish);
   });
 }
 function renderResult(){
@@ -369,7 +391,47 @@ $("#toRankBtn").onclick=()=>{show("rank");renderRank();};
 $("#resultBtn").onclick=()=>{renderResult();show("result");};
 $("#restartBtn").onclick=()=>{selected=[];currentFilter="すべて";$("#search").value="";show("select");renderFilters();renderSelected();renderCandidates();};
 $("#saveBtn").onclick=async()=>{
-  if(!window.html2canvas){alert("画像保存ライブラリの読み込みに失敗しました。");return;}
-  const canvas=await html2canvas($("#resultCard"),{scale:2,backgroundColor:"#fff"});
-  const a=document.createElement("a"); a.download="my-johnnys-sukigao9.png"; a.href=canvas.toDataURL("image/png"); a.click();
+  if(!window.html2canvas){alert("画像保存ライブラリの読み込みに失敗しました。ページを再読み込みしてね。");return;}
+  const btn=$("#saveBtn");
+  const original=btn.textContent;
+  btn.disabled=true;
+  btn.textContent="画像を作成中…";
+  try{
+    const canvas=await html2canvas($("#resultCard"),{
+      scale:2,
+      backgroundColor:"#fff",
+      useCORS:true,
+      logging:false
+    });
+    canvas.toBlob(async blob=>{
+      if(!blob){throw new Error("blob failed");}
+      const file=new File([blob],"my-johnnys-sukigao9.png",{type:"image/png"});
+      // iPhone/iPad：共有シートから「画像を保存」が選べる
+      if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+        try{
+          await navigator.share({files:[file],title:"MY JOHNNYS SUKIGAO 9"});
+          return;
+        }catch(e){
+          if(e && e.name === "AbortError") return;
+        }
+      }
+      // Safari等で共有できない場合：画像を新しい画面で開き、長押し保存
+      const url=URL.createObjectURL(blob);
+      const w=window.open(url,"_blank");
+      if(!w){
+        const a=document.createElement("a");
+        a.href=url;
+        a.download="my-johnnys-sukigao9.png";
+        a.click();
+      }
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+      alert("画像を開いたよ！画像を長押しして『写真に保存』してね📱");
+    },"image/png");
+  }catch(e){
+    console.error(e);
+    alert("画像の保存に失敗しました。もう一度試してみてね。");
+  }finally{
+    btn.disabled=false;
+    btn.textContent=original;
+  }
 };

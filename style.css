@@ -84,3 +84,10 @@ h1 span{font-size:.72em}
 .rank-item{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;position:relative;transition:transform .12s,opacity .12s,box-shadow .12s}
 .rank-item.dragging{opacity:.72;box-shadow:0 8px 24px rgba(50,30,40,.16);transform:scale(1.02);z-index:10;cursor:grabbing}
 @media (hover:none){.rank-item{cursor:grab}.rank-item .drag{font-size:24px}}
+
+.rank-controls{display:flex;flex-direction:column;gap:3px;margin-left:auto}
+.move-btn{width:30px;height:25px;padding:0;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--accent);font-weight:700;line-height:1}
+.move-btn:active{background:var(--accent2)}
+.rank-item .drag{margin-left:0;touch-action:none;user-select:none;-webkit-user-select:none;padding:8px 4px;font-size:24px;line-height:1;cursor:grab}
+.rank-item.dragging{opacity:.72;box-shadow:0 8px 24px rgba(50,30,40,.16);transform:scale(1.02);z-index:10}
+@media(max-width:420px){.rank-item{gap:8px}.rank-item .candidate-info{flex:1;min-width:0}.move-btn{width:28px;height:24px}.rank-item .drag{font-size:22px;padding:8px 2px}}
